@@ -4,10 +4,40 @@ import { useRouter } from "../../hooks/use-router";
 const Bet = () => {
   const router = useRouter();
   const [solValue, setSolValue] = useState(4.2);
+  const [walletBalance, setWalletBalance] = useState(4.67);
 
   const onInputSol = (e) => {
     e.preventDefault();
     setSolValue(e.target.value);
+  }
+
+  const onClickPlus = () => {
+    let curValue;
+    try {
+      curValue = parseFloat(solValue)
+      if (isNaN(curValue))
+        curValue = 0
+    } catch (e) {
+      curValue = 0;
+    }
+    setSolValue(curValue + 1);
+  }
+
+  const onClickMinus = () => {
+    let curValue;
+    try {
+      curValue = parseFloat(solValue)
+      if (isNaN(curValue))
+        curValue = 0
+    } catch (e) {
+      curValue = 0;
+    }
+    if (curValue == 0) {
+      setSolValue(curValue);
+    } else {
+      setSolValue(curValue - 1);
+    }
+    
   }
 
   return (
@@ -150,8 +180,8 @@ const Bet = () => {
                   </div>
 
                   <div className="bg-white rounded-[16px] flex flex-row p-3 gap-3 ml-10">
-                    <img onClick={() => setSolValue(solValue + 1.0)} className="cursor-pointer" src="/images/ic_round-plus.png" style={{width: '24px', height: '24px'}}></img>
-                    <img onClick={() => setSolValue(solValue - 1.0)} className="cursor-pointer" src="/images/ph_minus-bold.svg" style={{width: '24px', height: '24px'}}></img>
+                    <img onClick={onClickPlus} className="cursor-pointer" src="/images/ic_round-plus.png" style={{width: '24px', height: '24px'}}></img>
+                    <img onClick={onClickMinus} className="cursor-pointer" src="/images/ph_minus-bold.svg" style={{width: '24px', height: '24px'}}></img>
                   </div>
                 </div>
 
@@ -164,7 +194,7 @@ const Bet = () => {
 
                   <div className="bg-black rounded-[16px] flex flex-row p-3 gap-1 ml-10 items-center">
                     <img src="/images/solana.png" style={{width: '36px', height: '20px'}}></img>
-                    <p className="font-bold text-white">4.67</p>
+                    <p className="font-bold text-white">{walletBalance}</p>
                   </div>
                 </div>
               </div>
