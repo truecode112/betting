@@ -1,14 +1,42 @@
 import { useState } from "react";
 import { useRouter } from "../../hooks/use-router";
+import { transferSol } from "../../contract/bean";
 
 const Bet = () => {
   const router = useRouter();
   const [solValue, setSolValue] = useState(4.2);
   const [walletBalance, setWalletBalance] = useState(4.67);
+  const [pebbleNumber, setPebble] = useState(1);
 
   const onInputSol = (e) => {
     e.preventDefault();
     setSolValue(e.target.value);
+  }
+
+  const onMoscow = () => {
+    console.log(pebbleNumber);
+    setPebble(1);
+  }
+  const onNewYork = () => {
+    setPebble(2);
+  }
+  const onParis = () => {
+    setPebble(3);
+  }
+  const onCapTown = () => {
+    setPebble(4);
+  }
+  const onRioDeJaneiro = () => {
+    setPebble(5);
+  }
+  const onSydney = () => {
+    setPebble(6);
+  }
+  const onCario = () => {
+    setPebble(7);
+  }
+  const onTokyo = () => {
+    setPebble(8);
   }
 
   const onClickPlus = () => {
@@ -37,8 +65,56 @@ const Bet = () => {
     } else {
       setSolValue(curValue - 1);
     }
-    
+
   }
+
+  const testUser2 = "EAebFuvBoZ3CVPU2J3Gp9G3o199FYnPBfFBQNNYhTWoD"
+  const admin_wallet = "2S9iRfjn8k13KhViAYYECdsmU7QEd1iJX4S4H4ZspHRY"
+
+  const onClickTest = async () => {
+    let depositSol = parseFloat(solValue)
+    let pebbleNum = parseInt(pebbleNumber);
+    console.log(depositSol);
+    console.log(pebbleNum);
+    let wallet = testUser2;
+    let ref = admin_wallet;
+
+    if (depositSol === null) ref = wallet.toString();
+    try {
+      await transferSol(wallet, ref, depositSol);
+    } catch (err) {
+      console.error(err);
+      // return;
+    }
+
+    // Make a request to the backend endpoint using fetch or axios page=${page}
+    fetch(`http://95.217.70.224:3000/deposit?query=${depositSol}&pebble=${pebbleNum}&bettor=${testUser2}`)
+      .then((response) => response.text())
+      .then((data) => {
+        // Do something with the response data
+        console.log(data);
+      })
+      .catch((error) => {
+        // Handle any errors
+        console.error(error);
+      });
+  }
+
+  const bettingEnd = () => {
+    alert("bettingEnd!!!");
+    // Make a request to the backend endpoint using fetch or axios
+    fetch("http://localhost:3000/bettingEnd")
+      .then((response) => response.text())
+      .then((data) => {
+        // Do something with the response data
+        console.log(data);
+      })
+      .catch((error) => {
+        // Handle any errors
+        console.error(error);
+      });
+  }
+
 
   return (
     <div className="flex flex-col w-full h-full p-10 bg-gradient-to-bl from-[#0B021D] to-[#261A32]">
@@ -53,7 +129,7 @@ const Bet = () => {
           <p className="text-white">Last <span className="text-[#7F7DF9]">7 seconds</span> to place the bet</p>
         </div>
 
-        <div className="flex flex-row justify-center items-center cursor-pointer bg-[#383838] py-3 px-5 gap-3 rounded-[12px] border-solid border-[1px] border-[#3637AD]">
+        <div onClick={bettingEnd} className="flex flex-row justify-center items-center cursor-pointer bg-[#383838] py-3 px-5 gap-3 rounded-[12px] border-solid border-[1px] border-[#3637AD]">
           <img src="/icons/quit.svg"></img>
           <p className="text-white">Quit Game</p>
         </div>
@@ -156,13 +232,14 @@ const Bet = () => {
               <div className="flex flex-col w-1/2">
                 <p className="text-white">Choose your pebble to bet</p>
                 <div className="mt-2">
-                  <button className="mr-2 mb-2 font-bold bg-gradient-to-b from-[#4EAF90] to-[#B2D5B2] rounded-[12px] px-2 py-1 text-white">Moscow</button>
-                  <button className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">New York</button>
-                  <button className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Paris</button>
-                  <button className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Cape Town</button>
-                  <button className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Rio de Janeiro</button>
-                  <button className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Sydney</button>
-                  <button className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Cairo</button>
+                  <button id="moscow" onClick={onMoscow} className="mr-2 mb-2 font-bold bg-gradient-to-b from-[#4EAF90] to-[#B2D5B2] rounded-[12px] px-2 py-1 text-white">Moscow</button>
+                  <button id="newyork" onClick={onNewYork} className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">New York</button>
+                  <button id="paris" onClick={onParis} className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Paris</button>
+                  <button id="captown" onClick={onCapTown} className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Cape Town</button>
+                  <button id="riodejaneiro" onClick={onRioDeJaneiro} className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Rio de Janeiro</button>
+                  <button id="sydney" onClick={onSydney} className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Sydney</button>
+                  <button id="cario" onClick={onCario} className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Cairo</button>
+                  <button id="tokyo" onClick={onTokyo} className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Tokyo</button>
                 </div>
               </div>
 
@@ -173,34 +250,34 @@ const Bet = () => {
                 <div className="flex flex-row mt-2">
                   <div className="flex flex-row justify-center gap-2 items-center sol-input">
                     <div className="rounded-full bg-black p-1 h-fit">
-                      <img src="/images/solana.png" style={{ width: '24px', height: '24px'}}></img>
+                      <img src="/images/solana.png" style={{ width: '24px', height: '24px' }}></img>
                     </div>
                     <input className="py-1 px-2 text-white font-bold text-2xl bg-transparent active:bg-transparent w-16 text-center" value={solValue} onChange={onInputSol}></input>
                     <p className="font-bold text-md text-white">sol</p>
                   </div>
 
                   <div className="bg-white rounded-[16px] flex flex-row p-3 gap-3 ml-10">
-                    <img onClick={onClickPlus} className="cursor-pointer" src="/images/ic_round-plus.png" style={{width: '24px', height: '24px'}}></img>
-                    <img onClick={onClickMinus} className="cursor-pointer" src="/images/ph_minus-bold.svg" style={{width: '24px', height: '24px'}}></img>
+                    <img onClick={onClickPlus} className="cursor-pointer" src="/images/ic_round-plus.png" style={{ width: '24px', height: '24px' }}></img>
+                    <img onClick={onClickMinus} className="cursor-pointer" src="/images/ph_minus-bold.svg" style={{ width: '24px', height: '24px' }}></img>
                   </div>
                 </div>
 
                 <div className="flex flex-row mt-2 items-center">
-                  <img src="/images/ion_wallet.png" style={{width: '30px', height: '30px'}}></img>
+                  <img src="/images/ion_wallet.png" style={{ width: '30px', height: '30px' }}></img>
                   <div className="flex flex-col mx-2">
                     <p className="text-sm text-white">Your balance</p>
                     <p className="text-white">Wallet</p>
                   </div>
 
                   <div className="bg-black rounded-[16px] flex flex-row p-3 gap-1 ml-10 items-center">
-                    <img src="/images/solana.png" style={{width: '36px', height: '20px'}}></img>
+                    <img src="/images/solana.png" style={{ width: '36px', height: '20px' }}></img>
                     <p className="font-bold text-white">{walletBalance}</p>
                   </div>
                 </div>
               </div>
 
             </div>
-            <div className="flex justify-center items-center my-7">
+            <div onClick={onClickTest} className="flex justify-center items-center my-7">
               <div className="flex flex-row bg-white rounded-[12px] justify-center items-center py-3 px-7 cursor-pointer">
                 <img src="/icons/check.svg" style={{ width: '22px', height: '22px' }}></img>
                 <p className="text-[#7F7DF9] ml-3 font-bold">Place Bet</p>

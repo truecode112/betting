@@ -5,6 +5,8 @@ import { useRouter } from "../../hooks/use-router";
 const HomePage = () => {
   const router = useRouter();
 
+  // console.log(Navbar.resp);
+
   return (
     <div className="flex flex-col w-full h-screen">
       <div className="flex flex-row w-full flex-1">

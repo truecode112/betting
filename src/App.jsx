@@ -1,17 +1,15 @@
-import { useState } from 'react'
-import './App.css'
-import HomePage from './pages/HomePage'
-import { Route, Routes } from 'react-router-dom'
-import Bet from './pages/Bet'
+import WalletContextProvider from "./pages/wallet/WalletContext"
 
 function App() {
   return (
+    <WalletContextProvider>
     <div>
       <Routes>
         <Route path='/' element={<HomePage />} />
         <Route path='/bet' element={<Bet />} />
       </Routes>
     </div>
+    </WalletContextProvider>
   )
 }
 
