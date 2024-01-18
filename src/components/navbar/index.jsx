@@ -31,13 +31,14 @@ const Navbar = () => {
 
   return (
     <div className="bg-gradient-to-t from-[#433466] to-[#231B4A] flex flex-col py-5 px-8 items-center h-full w-[280px]" >
+      <WalletMultiButton />
       <img src="/images/logo.png" width={105} height={31} className="mt-2"></img>
-      <WalletMultiButton/>
+      
       <div className="rounded-[8px] bg-[#150C2A] gap-1 px-5 py-2 flex flex-row mt-10">
         <img src="/images/token-icon.svg" width={24} height={24}></img>
         <p className="text-white">1 GYPR - 0.3$</p>
       </div>
-      <button className="rounded-[8px] bg-[#150C2A] mt-3 px-12 py-2 text-[#4EAF90]" onClick={connectWallet}>Connect Wallet</button>
+      <button className="rounded-[8px] bg-[#150C2A] mt-3 px-12 py-2 text-[#4EAF90]" onClick={connectWallet}>Buy Token</button>
 
       <div className="w-full mt-10">
         <div className="flex flex-row w-full justify-between cursor-pointer">

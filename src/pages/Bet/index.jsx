@@ -1,12 +1,62 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "../../hooks/use-router";
 import { transferSol } from "../../contract/bean";
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import { LAMPORTS_PER_SOL, clusterApiUrl } from '@solana/web3.js'
+import * as anchor from '@project-serum/anchor'
+// import { useUserSOLBalanceStore } from '../wallet/useUserSOLBalanceStore';
 
 const Bet = () => {
   const router = useRouter();
+
+  // const connection = useConnection();
   const [solValue, setSolValue] = useState(4.2);
-  const [walletBalance, setWalletBalance] = useState(4.67);
+  const [walletBalance, setWalletBalance] = useState(6.5);
   const [pebbleNumber, setPebble] = useState(1);
+
+  let lamportBalance = 10;
+  const SOLANA_HOST = clusterApiUrl("devnet")
+  const connection = new anchor.web3.Connection(SOLANA_HOST)
+
+  // if (wallet?.publicKey) async () => {
+  //   const balance = connection.getBalance(wallet.publicKey);
+  //   console.log(balance);
+  //   lamportBalance = (balance / LAMPORTS_PER_SOL);
+  //   console.log("balance = ", lamportBalance)
+  // }
+
+  // const fetchBalance = async () => {
+  //   const balance1 = await connection.getBalance(wallet.publicKey);
+  //   console.log("balance == " + balance1);
+  //   setWalletBalance(balance1);
+  // };
+  // const wallet = useWallet();
+  // const { connection } = useConnection();
+
+  // const balance = useUserSOLBalanceStore((s) => s.balance)
+  // const { getUserSOLBalance } = useUserSOLBalanceStore()
+
+  // useEffect(() => {
+  //   if (wallet.publicKey) {
+  //     console.log(wallet.publicKey.toBase58())
+  //     getUserSOLBalance(wallet.publicKey, connection)
+  //   }
+  // }, [wallet.publicKey, connection, getUserSOLBalance]);
+
+  // const connection = useConnection();
+  const wallet = useWallet();
+  // const [balance, setBalance] = useState(0);
+
+  const fetchBalance = async () => {
+    const balance1 = await connection.getBalance(wallet.publicKey);
+    console.log("balance == " + balance1 / LAMPORTS_PER_SOL);
+    setWalletBalance(balance1 / LAMPORTS_PER_SOL);
+  };
+
+  useEffect(() => {
+    fetchBalance();
+  }, [connection, wallet]);
+
 
   const onInputSol = (e) => {
     e.preventDefault();
@@ -68,36 +118,37 @@ const Bet = () => {
 
   }
 
-  const testUser2 = "EAebFuvBoZ3CVPU2J3Gp9G3o199FYnPBfFBQNNYhTWoD"
-  const admin_wallet = "2S9iRfjn8k13KhViAYYECdsmU7QEd1iJX4S4H4ZspHRY"
+  // const testUser2 = "EAebFuvBoZ3CVPU2J3Gp9G3o199FYnPBfFBQNNYhTWoD"82N3oYy1woXb1qmDGDtnTGcA31EXeMvQSyJdnvXKrEsu
+  const admin_wallet = "3dQpUZtmujzzCZdRXyveTdBS2w6ykncdXG5JjtDbHU7f"
 
   const onClickTest = async () => {
-    let depositSol = parseFloat(solValue)
-    let pebbleNum = parseInt(pebbleNumber);
-    console.log(depositSol);
-    console.log(pebbleNum);
-    let wallet = testUser2;
+
     let ref = admin_wallet;
 
+    let depositSol = parseFloat(solValue);
+    let pebbleNum = parseInt(pebbleNumber);
+
     if (depositSol === null) ref = wallet.toString();
+    console.log(depositSol);
     try {
       await transferSol(wallet, ref, depositSol);
+      // Make a request to the backend endpoint using fetch or axios page=${page}
+      fetch(`http://95.217.70.224:3000/deposit?query=${depositSol}&pebble=${pebbleNum}&bettor=${wallet.publicKey}`)
+        .then((response) => response.text())
+        .then((data) => {
+          // Do something with the response data
+          console.log(data);
+        })
+        .catch((error) => {
+          // Handle any errors
+          console.error(error);
+        });
     } catch (err) {
       console.error(err);
-      // return;
+      return;
     }
 
-    // Make a request to the backend endpoint using fetch or axios page=${page}
-    fetch(`http://95.217.70.224:3000/deposit?query=${depositSol}&pebble=${pebbleNum}&bettor=${testUser2}`)
-      .then((response) => response.text())
-      .then((data) => {
-        // Do something with the response data
-        console.log(data);
-      })
-      .catch((error) => {
-        // Handle any errors
-        console.error(error);
-      });
+
   }
 
   const bettingEnd = () => {

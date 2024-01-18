@@ -3,10 +3,14 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
 import { BrowserRouter } from 'react-router-dom'
-import store from "./redux/store"
+import WalletContextProvider from '../src/pages/wallet/WalletContext.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
+  <>
+    <WalletContextProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </WalletContextProvider>
+  </>
 )
