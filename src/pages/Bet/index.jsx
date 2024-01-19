@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import clsx from "clsx";
+
 import { useRouter } from "../../hooks/use-router";
 import { transferSol } from "../../contract/bean";
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
@@ -13,39 +15,20 @@ const Bet = () => {
   const [solValue, setSolValue] = useState(4.2);
   const [walletBalance, setWalletBalance] = useState(6.5);
   const [pebbleNumber, setPebble] = useState(1);
+  const [isAdmin, setAdmin] = useState(false);
+  const [expectWinner, setWinner] = useState(1);
 
   let lamportBalance = 10;
   const SOLANA_HOST = clusterApiUrl("devnet")
   const connection = new anchor.web3.Connection(SOLANA_HOST)
-
-  // if (wallet?.publicKey) async () => {
-  //   const balance = connection.getBalance(wallet.publicKey);
-  //   console.log(balance);
-  //   lamportBalance = (balance / LAMPORTS_PER_SOL);
-  //   console.log("balance = ", lamportBalance)
-  // }
-
-  // const fetchBalance = async () => {
-  //   const balance1 = await connection.getBalance(wallet.publicKey);
-  //   console.log("balance == " + balance1);
-  //   setWalletBalance(balance1);
-  // };
-  // const wallet = useWallet();
-  // const { connection } = useConnection();
-
-  // const balance = useUserSOLBalanceStore((s) => s.balance)
-  // const { getUserSOLBalance } = useUserSOLBalanceStore()
-
-  // useEffect(() => {
-  //   if (wallet.publicKey) {
-  //     console.log(wallet.publicKey.toBase58())
-  //     getUserSOLBalance(wallet.publicKey, connection)
-  //   }
-  // }, [wallet.publicKey, connection, getUserSOLBalance]);
-
-  // const connection = useConnection();
   const wallet = useWallet();
-  // const [balance, setBalance] = useState(0);
+  const admin_wallet = "3dQpUZtmujzzCZdRXyveTdBS2w6ykncdXG5JjtDbHU7f"
+
+  useEffect(() => {
+    if (wallet.publicKey == admin_wallet) {
+      setAdmin(true);
+    }
+  }, [wallet])
 
   const fetchBalance = async () => {
     const balance1 = await connection.getBalance(wallet.publicKey);
@@ -98,7 +81,12 @@ const Bet = () => {
     } catch (e) {
       curValue = 0;
     }
-    setSolValue(curValue + 1);
+    if ((curValue + 1) > walletBalance) {
+      setSolValue(walletBalance);
+    }
+    else {
+      setSolValue(curValue + 1);
+    }
   }
 
   const onClickMinus = () => {
@@ -110,7 +98,7 @@ const Bet = () => {
     } catch (e) {
       curValue = 0;
     }
-    if (curValue == 0) {
+    if (curValue < 1) {
       setSolValue(curValue);
     } else {
       setSolValue(curValue - 1);
@@ -118,11 +106,34 @@ const Bet = () => {
 
   }
 
-  // const testUser2 = "EAebFuvBoZ3CVPU2J3Gp9G3o199FYnPBfFBQNNYhTWoD"82N3oYy1woXb1qmDGDtnTGcA31EXeMvQSyJdnvXKrEsu
-  const admin_wallet = "3dQpUZtmujzzCZdRXyveTdBS2w6ykncdXG5JjtDbHU7f"
+  const onSelectWinner = (e) => {
+    e.preventDefault();
+    setWinner(e.target.value);
+  }
 
-  const onClickTest = async () => {
+  const getExpectWinner = () => {
+    fetch("http://localhost:3000/expetwinner")
+      .then((response) => response.text())
+      .then((data) => {
+        // Do something with the response data
+        console.log(data);
+        var data_t = JSON.parse(data)
+        if (data_t.status == 'success') {
+          console.log(data_t.msg);
+          setWinner(data_t.msg);
+          console.log(expectWinner);
+        }
+        else {
+          alert("Invalid Betting Time!!!");
+        }
+      })
+      .catch((error) => {
+        // Handle any errors
+        console.error(error);
+      });
+  }
 
+  const onPlaceBet = async () => {
     let ref = admin_wallet;
 
     let depositSol = parseFloat(solValue);
@@ -131,23 +142,36 @@ const Bet = () => {
     if (depositSol === null) ref = wallet.toString();
     console.log(depositSol);
     try {
-      await transferSol(wallet, ref, depositSol);
       // Make a request to the backend endpoint using fetch or axios page=${page}
       fetch(`http://95.217.70.224:3000/deposit?query=${depositSol}&pebble=${pebbleNum}&bettor=${wallet.publicKey}`)
         .then((response) => response.text())
         .then((data) => {
-          // Do something with the response data
           console.log(data);
+          var data_t = JSON.parse(data)
+          if (data_t.status == 'success') {
+            transferSol(wallet, ref, depositSol);
+            alert("Betting Success!!!");
+            console.log(data_t.msg);
+            setWinner(data_t.msg);
+            console.log(expectWinner);
+          }
+          else {
+            alert("Invalid Betting Time!!!");
+          }
         })
         .catch((error) => {
           // Handle any errors
           console.error(error);
         });
+      // refreshPage();
     } catch (err) {
       console.error(err);
       return;
     }
 
+    function refreshPage() {
+      window.location.reload(false);
+    }
 
   }
 
@@ -159,6 +183,35 @@ const Bet = () => {
       .then((data) => {
         // Do something with the response data
         console.log(data);
+      })
+      .catch((error) => {
+        // Handle any errors
+        console.error(error);
+      });
+  }
+
+  const bettingStart = () => {
+    alert("Betting Start!!!");
+    fetch(`http://95.217.70.224:3000/bettingStart`)
+      .then((response) => response.text())
+      .then((data) => {
+        // Do something with the response data
+        console.log(data);
+      })
+      .catch((error) => {
+        // Handle any errors
+        console.error(error);
+      });
+    refreshPage();
+  }
+
+  const decideWinner = () => {
+    fetch(`http://95.217.70.224:3000/decidewinner?query=${expectWinner}`)
+      .then((response) => response.text())
+      .then((data) => {
+        // Do something with the response data
+        console.log(data);
+
       })
       .catch((error) => {
         // Handle any errors
@@ -180,7 +233,7 @@ const Bet = () => {
           <p className="text-white">Last <span className="text-[#7F7DF9]">7 seconds</span> to place the bet</p>
         </div>
 
-        <div onClick={bettingEnd} className="flex flex-row justify-center items-center cursor-pointer bg-[#383838] py-3 px-5 gap-3 rounded-[12px] border-solid border-[1px] border-[#3637AD]">
+        <div className="flex flex-row justify-center items-center cursor-pointer bg-[#383838] py-3 px-5 gap-3 rounded-[12px] border-solid border-[1px] border-[#3637AD]">
           <img src="/icons/quit.svg"></img>
           <p className="text-white">Quit Game</p>
         </div>
@@ -283,14 +336,14 @@ const Bet = () => {
               <div className="flex flex-col w-1/2">
                 <p className="text-white">Choose your pebble to bet</p>
                 <div className="mt-2">
-                  <button id="moscow" onClick={onMoscow} className="mr-2 mb-2 font-bold bg-gradient-to-b from-[#4EAF90] to-[#B2D5B2] rounded-[12px] px-2 py-1 text-white">Moscow</button>
-                  <button id="newyork" onClick={onNewYork} className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">New York</button>
-                  <button id="paris" onClick={onParis} className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Paris</button>
-                  <button id="captown" onClick={onCapTown} className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Cape Town</button>
-                  <button id="riodejaneiro" onClick={onRioDeJaneiro} className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Rio de Janeiro</button>
-                  <button id="sydney" onClick={onSydney} className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Sydney</button>
-                  <button id="cario" onClick={onCario} className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Cairo</button>
-                  <button id="tokyo" onClick={onTokyo} className="mr-2 mb-2 bg-black font-bold bg-opacity-20 f rounded-[12px] px-2 py-1 text-[#3B3B3B]">Tokyo</button>
+                  <button id="moscow" onClick={onMoscow} className={clsx("mr-2 mb-2 font-bold rounded-[12px] px-2 py-1 text-white bg-gradient-to-b  from-[#4EAF90]", pebbleNumber === 1 ? "to-[#B2D5B2]" : " bg-black")}>Moscow</button>
+                  <button id="newyork" onClick={onNewYork} className={clsx("mr-2 mb-2 font-bold rounded-[12px] px-2 py-1 text-white bg-gradient-to-b from-[#4EAF90]", pebbleNumber === 2 ? " to-[#B2D5B2]" : "bg-black")}>New York</button>
+                  <button id="paris" onClick={onParis} className={clsx("mr-2 mb-2 font-bold rounded-[12px] px-2 py-1 text-white bg-gradient-to-b from-[#4EAF90]", pebbleNumber === 3 ? " to-[#B2D5B2]" : "bg-black")}>Paris</button>
+                  <button id="captown" onClick={onCapTown} className={clsx("mr-2 mb-2 font-bold rounded-[12px] px-2 py-1 text-white bg-gradient-to-b from-[#4EAF90]", pebbleNumber === 4 ? " to-[#B2D5B2]" : "bg-black")}>Cape Town</button>
+                  <button id="riodejaneiro" onClick={onRioDeJaneiro} className={clsx("mr-2 mb-2 font-bold rounded-[12px] px-2 py-1 text-white bg-gradient-to-b from-[#4EAF90]", pebbleNumber === 5 ? " to-[#B2D5B2]" : "bg-black")}>Rio de Janeiro</button>
+                  <button id="sydney" onClick={onSydney} className={clsx("mr-2 mb-2 font-bold rounded-[12px] px-2 py-1 text-white bg-gradient-to-b from-[#4EAF90]", pebbleNumber === 6 ? " to-[#B2D5B2]" : "bg-black")}>Sydney</button>
+                  <button id="cario" onClick={onCario} className={clsx("mr-2 mb-2 font-bold rounded-[12px] px-2 py-1 text-white bg-gradient-to-b from-[#4EAF90]", pebbleNumber === 7 ? " to-[#B2D5B2]" : "bg-black")}>Cairo</button>
+                  <button id="tokyo" onClick={onTokyo} className={clsx("mr-2 mb-2 font-bold rounded-[12px] px-2 py-1 text-white bg-gradient-to-b from-[#4EAF90]", pebbleNumber === 8 ? " to-[#B2D5B2]" : "bg-black")}>Tokyo</button>
                 </div>
               </div>
 
@@ -328,7 +381,7 @@ const Bet = () => {
               </div>
 
             </div>
-            <div onClick={onClickTest} className="flex justify-center items-center my-7">
+            <div onClick={onPlaceBet} className="flex justify-center items-center my-7">
               <div className="flex flex-row bg-white rounded-[12px] justify-center items-center py-3 px-7 cursor-pointer">
                 <img src="/icons/check.svg" style={{ width: '22px', height: '22px' }}></img>
                 <p className="text-[#7F7DF9] ml-3 font-bold">Place Bet</p>
@@ -345,7 +398,15 @@ const Bet = () => {
             </div>
           </div>
         </div>
-
+        {isAdmin === true && (
+          <div className="flex flex-col ml-5">
+            <button onClick={bettingStart} className="mr-2 mb-2 font-bold rounded-[12px] px-2 py-1 text-white bg-gradient-to-b from-[#4EAF90] to-[#B2D5B2] bg-black">Start</button>
+            <button onClick={bettingEnd} className="mr-2 mb-2 font-bold rounded-[12px] px-2 py-1 text-white bg-gradient-to-b from-[#4EAF90] to-[#B2D5B2] bg-black">End</button>
+            <button onClick={getExpectWinner} className="mr-2 mb-2 font-bold rounded-[12px] px-2 py-1 text-white bg-gradient-to-b from-[#4EAF90] to-[#B2D5B2] bg-black">Expect Winner</button>
+            <input className="py-1 px-2 text-white font-bold text-2xl bg-transparent active:bg-transparent w-16 text-center" value={expectWinner} onChange={onSelectWinner}></input>
+            <button onClick={decideWinner} className="mr-2 mb-2 font-bold rounded-[12px] px-2 py-1 text-white bg-gradient-to-b from-[#4EAF90] to-[#B2D5B2] bg-black">Decide Winner</button>
+          </div>
+        )}
       </div>
     </div>
   )
